@@ -33,7 +33,7 @@ public class GPanel extends JPanel implements KeyListener {
         new Thread(() -> {
             try {
                 while (this.gameRunning) {
-                    snake.move(currDirection);
+                    if(currDirection != 'p')snake.move(currDirection);
                     checkCollision();
                     repaint();
                     Thread.sleep(650); // Pause for .7 second
@@ -47,20 +47,20 @@ public class GPanel extends JPanel implements KeyListener {
     private void checkCollision() {
         Snake.Block head = snake.getBody().getFirst();
         // Food Collision
-        if(head.getX() == food.x && head.getY() == food.y) {
+        if (head.getX() == food.x && head.getY() == food.y) {
             snake.grow(currDirection);
         }
 
         int headX = head.getX();
         int headY = head.getY();
         int i = 0;
-        for (Snake.Block cell : this.snake.getBody()){
-            if(i == 0){
+        for (Snake.Block cell : this.snake.getBody()) {
+            if (i == 0) {
                 i = 1;
                 continue;
             }
 
-            if (cell.getX() == headX && cell.getY() == headY){
+            if (cell.getX() == headX && cell.getY() == headY) {
                 System.out.print("Game Over");
             }
         }
@@ -70,7 +70,7 @@ public class GPanel extends JPanel implements KeyListener {
 
     public void spawnFood() {
         food = new Point();
-        food.setLocation(20,40);
+        food.setLocation(20, 40);
     }
 
 
@@ -80,9 +80,58 @@ public class GPanel extends JPanel implements KeyListener {
         Graphics2D g2 = (Graphics2D) g;
         g.setColor(Color.blue);
         g.fillRect(this.food.x, this.food.y, snake.getSize(), snake.getSize());
-        g.setColor(Color.black);
+        boolean first = true;
+        int counter = 0;
         for (Snake.Block cell : this.snake.getBody()) {
+            g.setColor(Color.white);
+            g2.setStroke(new BasicStroke(5));
+            if (first) {
+                g2.drawRect(cell.getX(), cell.getY(), snake.getSize(), snake.getSize());
+                first = false;
+            } else {
+                Snake.Block prevCell = this.snake.getBody().get(counter - 1);
+                Snake.Block nextCell = null;
+                try {nextCell = this.snake.getBody().get(counter + 1);} catch (IndexOutOfBoundsException e){}
+                if (prevCell.getX() == cell.getX()) {
+                    g2.drawLine(cell.getX(), cell.getY(), cell.getX(), cell.getY() + snake.getSize());
+                    g2.drawLine(cell.getX() + snake.getSize(), cell.getY(), cell.getX() + snake.getSize(), cell.getY() + snake.getSize());
+                    if(nextCell != null){
+                        if(prevCell.getX() > nextCell.getX() && prevCell.getY() < nextCell.getY()){
+                            g2.drawLine(cell.getX(), cell.getY() + snake.getSize(), cell.getX() + snake.getSize(),cell.getY() + snake.getSize());
+                        }
+                        if(prevCell.getX() > nextCell.getX() && prevCell.getY() > nextCell.getY()){
+                            g2.drawLine(cell.getX(), cell.getY(), cell.getX()+snake.getSize(), cell.getY());
+                        }
+                        if(prevCell.getX() < nextCell.getX() && prevCell.getY() > nextCell.getY()){
+                            g2.drawLine(cell.getX(),cell.getY(),cell.getX()+snake.getSize(),cell.getY());
+                        }
+                        if(prevCell.getX() < nextCell.getX() && prevCell.getY() < nextCell.getY()){
+                            g2.drawLine(cell.getX(),cell.getY() + snake.getSize(),cell.getX() + snake.getSize(),cell.getY() + snake.getSize());
+                        }
+                    }
+                } else {
+                    g2.drawLine(cell.getX(), cell.getY(), cell.getX() + snake.getSize(), cell.getY());
+                    g2.drawLine(cell.getX(), cell.getY() + snake.getSize(), cell.getX() + snake.getSize(), cell.getY() + snake.getSize());
+                    if(nextCell != null){
+                        if(prevCell.getX() > nextCell.getX() && prevCell.getY() > nextCell.getY()){
+                            g2.drawLine(cell.getX(),cell.getY(), cell.getX(),cell.getY() + snake.getSize());
+                        }
+                        if(prevCell.getX() < nextCell.getX() && prevCell.getY() < nextCell.getY()){
+                            g2.drawLine(cell.getX() + snake.getSize(), cell.getY(),cell.getX() + snake.getSize(),cell.getY() + snake.getSize());
+                        }
+                        if (prevCell.getX() < nextCell.getX() && prevCell.getY() > nextCell.getY()){
+                            g2.drawLine(cell.getX() + snake.getSize(),cell.getY(),cell.getX() + snake.getSize(), cell.getY() + snake.getSize());
+                        }
+                        if (prevCell.getX() > nextCell.getX() && prevCell.getY() < nextCell.getY()){
+                            g2.drawLine(cell.getX(),cell.getY(),cell.getX(),cell.getY()+ snake.getSize());
+                        }
+                    }
+
+                }
+            }
+            g.setColor(Color.black);
             g.fillRect(cell.getX(), cell.getY(), snake.getSize(), snake.getSize());
+            counter++;
         }
     }
 
@@ -94,16 +143,27 @@ public class GPanel extends JPanel implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         System.out.print(e.getKeyCode());
-        switch (e.getKeyCode()){
-            case 40:currDirection = 's';break;
-            case 39:currDirection = 'd';break;
-            case 38:currDirection = 'w';break;
-            case 37:currDirection = 'a';break;
+        switch (e.getKeyCode()) {
+            case 40:
+                currDirection = 's';
+                break;
+            case 39:
+                currDirection = 'd';
+                break;
+            case 38:
+                currDirection = 'w';
+                break;
+            case 37:
+                currDirection = 'a';
+                break;
+            default:
+                currDirection = 'p';
+                break;
         }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        
+
     }
 }

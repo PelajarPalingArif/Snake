@@ -77,6 +77,7 @@ public class Snake {
             case 'a':this.body.getFirst().addX(-this.size);break;
             case 's':this.body.getFirst().addY(this.size);break;
             case 'd':this.body.getFirst().addX(this.size);break;
+            case 'p':break;
         }
         int tempX, tempY;
         for(int i = 1; i < this.body.size(); i++){
