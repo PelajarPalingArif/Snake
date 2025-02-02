@@ -18,6 +18,11 @@ public class Snake {
             this.y = y;
             this.color = (color == null) ? DEFAULT_COLOR : color;
         }
+        public Block(Block b){
+            this.x = b.getX();
+            this.y = b.getY();
+            this.color = (b.color == null) ? DEFAULT_COLOR : b.color;
+        }
         public int getX(){return x;}
         public int getY(){return y;}
         public void addX(int addition) {this.x += addition;}
@@ -37,31 +42,7 @@ public class Snake {
 
     }
     public void grow(char currDirection){
-        System.out.print("Growing");
-        int xModifier = 0;
-        int yModifier = 0;
-        Block last = this.body.getLast();
-        Block secondLast = this.body.get(this.body.size() - 2);
-        if (last.getX() > secondLast.getX()){
-            System.out.print("Pointing right");
-            xModifier = 10;
-        }
-        else if (last.getX() < secondLast.getX()){
-            System.out.print("Pointing left");
-            xModifier = -10;
-        }
-        else if (last.getY() > secondLast.getY()){
-            System.out.print("Pointing down");
-            yModifier = 10;
-        }
-        else {
-            System.out.print("Pointing up");
-            yModifier = -10;
-        }
-
-
-        this.body.add(new Block(last.getX() + xModifier, last.getY() + yModifier, null));
-
+        this.body.add(new Block(this.body.getLast()));
     }
 
     public void reset(){
