@@ -1,7 +1,6 @@
+import config.PropertiesReader;
 import gui.GFrame;
 
-import java.awt.*;
-import java.io.*;
 import javax.swing.*;
 
 public class Main {
