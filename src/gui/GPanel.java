@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Random;
+import config.PropertiesReader;
 
 public class GPanel extends JPanel implements KeyListener {
     private Snake snake;
@@ -37,7 +38,7 @@ public class GPanel extends JPanel implements KeyListener {
                     if (currDirection != 'p') snake.move(currDirection);
                     checkCollision();
                     repaint();
-                    Thread.sleep(650); // Pause for .7 second
+                    Thread.sleep(PropertiesReader.clock); // Pause for .7 second
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
