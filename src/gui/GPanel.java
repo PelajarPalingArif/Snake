@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.Random;
 
 public class GPanel extends JPanel implements KeyListener {
     private Snake snake;
@@ -33,7 +34,7 @@ public class GPanel extends JPanel implements KeyListener {
         new Thread(() -> {
             try {
                 while (this.gameRunning) {
-                    if(currDirection != 'p')snake.move(currDirection);
+                    if (currDirection != 'p') snake.move(currDirection);
                     checkCollision();
                     repaint();
                     Thread.sleep(650); // Pause for .7 second
@@ -49,6 +50,7 @@ public class GPanel extends JPanel implements KeyListener {
         // Food Collision
         if (head.getX() == food.x && head.getY() == food.y) {
             snake.grow(currDirection);
+            editFoodLocation();
         }
 
         int headX = head.getX();
@@ -73,6 +75,16 @@ public class GPanel extends JPanel implements KeyListener {
         food.setLocation(20, 40);
     }
 
+    public void editFoodLocation() {
+        int gridSize = this.snake.getSize();
+        int maxX = (GFrame.WINDOW_WIDTH / gridSize) * gridSize - gridSize;
+        int maxY = (GFrame.WINDOW_HEIGHT / gridSize) * gridSize - gridSize;
+        Random random = new Random();
+        int randX = random.nextInt((maxX / gridSize) + 1) * gridSize;
+        int randY = random.nextInt((maxY / gridSize) + 1) * gridSize;
+        this.food.setLocation(randX, randY);
+    }
+
 
     @Override
     public void paintComponent(Graphics g) {
@@ -83,54 +95,131 @@ public class GPanel extends JPanel implements KeyListener {
         boolean first = true;
         int counter = 0;
         for (Snake.Block cell : this.snake.getBody()) {
+            g.setColor(Color.black);
+            g.fillRect(cell.getX(), cell.getY(), snake.getSize(), snake.getSize());
             g.setColor(Color.white);
-            g2.setStroke(new BasicStroke(5));
+            g2.setStroke(new BasicStroke(3));
+
             if (first) {
                 g2.drawRect(cell.getX(), cell.getY(), snake.getSize(), snake.getSize());
                 first = false;
             } else {
+                // snake heading up / down
                 Snake.Block prevCell = this.snake.getBody().get(counter - 1);
                 Snake.Block nextCell = null;
-                try {nextCell = this.snake.getBody().get(counter + 1);} catch (IndexOutOfBoundsException e){}
+                try {
+                    nextCell = this.snake.getBody().get(counter + 1);
+                } catch (IndexOutOfBoundsException e) {
+                }
+                boolean cornerCell = false;
                 if (prevCell.getX() == cell.getX()) {
-                    g2.drawLine(cell.getX(), cell.getY(), cell.getX(), cell.getY() + snake.getSize());
-                    g2.drawLine(cell.getX() + snake.getSize(), cell.getY(), cell.getX() + snake.getSize(), cell.getY() + snake.getSize());
-                    if(nextCell != null){
-                        if(prevCell.getX() > nextCell.getX() && prevCell.getY() < nextCell.getY()){
-                            g2.drawLine(cell.getX(), cell.getY() + snake.getSize(), cell.getX() + snake.getSize(),cell.getY() + snake.getSize());
+                    // heading upwards / downwards
+                    if (nextCell != null) {
+                        if (prevCell.getX() > nextCell.getX() && prevCell.getY() < nextCell.getY()) {
+                            /*
+                            *   PP
+                            * NNCC
+                            *
+                            * */
+                            g2.drawLine(cell.getX(), cell.getY() + snake.getSize(), cell.getX() + snake.getSize(), cell.getY() + snake.getSize());
+                            g2.drawLine(cell.getX() + snake.getSize(), cell.getY(), cell.getX() + snake.getSize(), cell.getY() + snake.getSize());
+
+                            cornerCell = true;
                         }
-                        if(prevCell.getX() > nextCell.getX() && prevCell.getY() > nextCell.getY()){
-                            g2.drawLine(cell.getX(), cell.getY(), cell.getX()+snake.getSize(), cell.getY());
+
+                        if (prevCell.getX() > nextCell.getX() && prevCell.getY() > nextCell.getY()) {
+                            /*
+                             * NNCC
+                             *   PP
+                             * */
+
+                            g2.drawLine(cell.getX(), cell.getY(), cell.getX() + snake.getSize(), cell.getY());
+                            g2.drawLine(cell.getX() + snake.getSize(), cell.getY(), cell.getX() + snake.getSize(), cell.getY() + snake.getSize());
+                            cornerCell = true;
                         }
-                        if(prevCell.getX() < nextCell.getX() && prevCell.getY() > nextCell.getY()){
-                            g2.drawLine(cell.getX(),cell.getY(),cell.getX()+snake.getSize(),cell.getY());
+                        if (prevCell.getX() < nextCell.getX() && prevCell.getY() > nextCell.getY()) {
+                            /*
+                             *
+                             * NNCC
+                             * PP
+                             * */
+                            g2.drawLine(cell.getX(), cell.getY(), cell.getX() + snake.getSize(), cell.getY());
+                            g2.drawLine(cell.getX(), cell.getY(), cell.getX(), cell.getY() + snake.getSize());
+                            cornerCell = true;
                         }
-                        if(prevCell.getX() < nextCell.getX() && prevCell.getY() < nextCell.getY()){
-                            g2.drawLine(cell.getX(),cell.getY() + snake.getSize(),cell.getX() + snake.getSize(),cell.getY() + snake.getSize());
+                        if (prevCell.getX() < nextCell.getX() && prevCell.getY() < nextCell.getY()) {
+                            /*
+                             * PP
+                             * CCNN
+                             *
+                             *
+                             * */
+                            g2.drawLine(cell.getX(), cell.getY() + snake.getSize(), cell.getX() + snake.getSize(), cell.getY() + snake.getSize());
+                            g2.drawLine(cell.getX(), cell.getY(), cell.getX(), cell.getY() + snake.getSize());
+                            cornerCell = true;
                         }
+                        if (!cornerCell) {
+                            g2.drawLine(cell.getX(), cell.getY(), cell.getX(), cell.getY() + snake.getSize());
+                            g2.drawLine(cell.getX() + snake.getSize(), cell.getY(), cell.getX() + snake.getSize(), cell.getY() + snake.getSize());
+                        }
+                    } else {
+                        g2.drawLine(cell.getX(), cell.getY(), cell.getX(), cell.getY() + snake.getSize());
+                        g2.drawLine(cell.getX() + snake.getSize(), cell.getY(), cell.getX() + snake.getSize(), cell.getY() + snake.getSize());
                     }
                 } else {
-                    g2.drawLine(cell.getX(), cell.getY(), cell.getX() + snake.getSize(), cell.getY());
-                    g2.drawLine(cell.getX(), cell.getY() + snake.getSize(), cell.getX() + snake.getSize(), cell.getY() + snake.getSize());
-                    if(nextCell != null){
-                        if(prevCell.getX() > nextCell.getX() && prevCell.getY() > nextCell.getY()){
-                            g2.drawLine(cell.getX(),cell.getY(), cell.getX(),cell.getY() + snake.getSize());
+                    // snake heading left / right
+                    if (nextCell != null) {
+                        if (prevCell.getX() > nextCell.getX() && prevCell.getY() > nextCell.getY()) {
+                            /*
+                             * NN
+                             * CCPP
+                             *
+                             * */
+                            g2.drawLine(cell.getX(), cell.getY(), cell.getX(), cell.getY() + snake.getSize());
+                            g2.drawLine(cell.getX(), cell.getY() + snake.getSize(), cell.getX() + snake.getSize(), cell.getY() + snake.getSize());
+
+                            cornerCell = true;
                         }
-                        if(prevCell.getX() < nextCell.getX() && prevCell.getY() < nextCell.getY()){
-                            g2.drawLine(cell.getX() + snake.getSize(), cell.getY(),cell.getX() + snake.getSize(),cell.getY() + snake.getSize());
+                        if (prevCell.getX() < nextCell.getX() && prevCell.getY() < nextCell.getY()) {
+                            /*
+                             * PPCC
+                             *   NN
+                             *
+                             * */
+                            g2.drawLine(cell.getX() + snake.getSize(), cell.getY(), cell.getX() + snake.getSize(), cell.getY() + snake.getSize());
+                            g2.drawLine(cell.getX(), cell.getY(), cell.getX() + snake.getSize(), cell.getY());
+                            cornerCell = true;
                         }
-                        if (prevCell.getX() < nextCell.getX() && prevCell.getY() > nextCell.getY()){
-                            g2.drawLine(cell.getX() + snake.getSize(),cell.getY(),cell.getX() + snake.getSize(), cell.getY() + snake.getSize());
+                        if (prevCell.getX() < nextCell.getX() && prevCell.getY() > nextCell.getY()) {
+                            /*
+                             *   NN
+                             * PPCC
+                             *
+                             * */
+                            g2.drawLine(cell.getX() + snake.getSize(), cell.getY(), cell.getX() + snake.getSize(), cell.getY() + snake.getSize());
+                            g2.drawLine(cell.getX(), cell.getY()  + snake.getSize(), cell.getX() + snake.getSize(), cell.getY() + snake.getSize());
+                            cornerCell = true;
                         }
-                        if (prevCell.getX() > nextCell.getX() && prevCell.getY() < nextCell.getY()){
-                            g2.drawLine(cell.getX(),cell.getY(),cell.getX(),cell.getY()+ snake.getSize());
+                        if (prevCell.getX() > nextCell.getX() && prevCell.getY() < nextCell.getY()) {
+                            /*
+                             * CCPP
+                             * NN
+                             * */
+                            g2.drawLine(cell.getX(), cell.getY(), cell.getX(), cell.getY() + snake.getSize());
+                            g2.drawLine(cell.getX(), cell.getY(), cell.getX() + snake.getSize(), cell.getY());
+                            cornerCell = true;
+                        }
+                        if (!cornerCell) {
+                            g2.drawLine(cell.getX(), cell.getY(), cell.getX() + snake.getSize(), cell.getY());
+                            g2.drawLine(cell.getX(), cell.getY() + snake.getSize(), cell.getX() + snake.getSize(), cell.getY() + snake.getSize());
                         }
                     }
-
+                    else {
+                        g2.drawLine(cell.getX(), cell.getY(), cell.getX() + snake.getSize(), cell.getY());
+                        g2.drawLine(cell.getX(), cell.getY() + snake.getSize(), cell.getX() + snake.getSize(), cell.getY() + snake.getSize());
+                    }
                 }
             }
-            g.setColor(Color.black);
-            g.fillRect(cell.getX(), cell.getY(), snake.getSize(), snake.getSize());
             counter++;
         }
     }
